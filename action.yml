@@ -1,18 +1,17 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'readme-badges'
+description: 'Generate badges in README'
+author: 'Purbayan Chowdhury'
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  GH_TOKEN:
+    description: 'The github token'
     required: true
-    default: '1000'
 
 # Define your outputs here.
 outputs:
   time:
-    description: 'Your output description here'
+    description: 'The time when the command run'
 
 runs:
   using: node20
