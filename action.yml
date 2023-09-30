@@ -1,17 +1,23 @@
-name: 'readme-badges'
-description: 'Generate badges in README'
-author: 'Purbayan Chowdhury'
+name: "readme-badges"
+description: "Generate badges in README"
+author: "Purbayan Chowdhury"
 
 # Define your inputs here.
 inputs:
   GH_TOKEN:
-    description: 'The github token'
+    description: "GitHub access token with Repo scope"
     required: true
+  SHOW_LICENSE:
+    description: "Whether to generate LICENSE badge"
+    default: "True"
+  BADGE_STYLE:
+    description: "Style for the badge maker (flat, flat-square, plastic, for-the-badge, social)"
+    default: for-the-badge
 
 # Define your outputs here.
 outputs:
   time:
-    description: 'The time when the command run'
+    description: "The time when the command run"
 
 runs:
   using: node20
