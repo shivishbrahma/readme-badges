@@ -7,16 +7,16 @@ const github = require('@actions/github')
  */
 async function run() {
   try {
-    const token = core.getInput('GH_TOKEN', { required: true }),
-      owner = github.context.repo.owner,
-      repo = github.context.repo.repo
+    const token = core.getInput('GH_TOKEN', { required: true })
+    const owner = github.context.repo.owner
+    const repo = github.context.repo.repo
     console.log(`GH_TOKEN ${token}!`)
 
     const octokit = github.getOctokit(token)
 
     const headers = {
       'User-Agent': 'Web/2.0',
-      Authorization: 'Bearer ' + token
+      Authorization: `Bearer ${token}`
     }
 
     const graphQLWithAuth = octokit.graphql.defaults({ headers })
