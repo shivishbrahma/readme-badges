@@ -190,7 +190,7 @@ function generateLanguageBadge(
   const filePath = path.join(badgeDir, filename)
   fs.writeFileSync(filePath, svgContent)
   console.log(`Badge successfully written at ${filePath}`)
-  
+
   return svgContent
 }
 
