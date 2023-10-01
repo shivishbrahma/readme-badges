@@ -11681,9 +11681,10 @@ module.exports = {
 const { makeBadge, ValidationError } = __nccwpck_require__(9141)
 const core = __nccwpck_require__(2186)
 const badgeStyle = core.getInput('BADGE_STYLE')
-// const badgeDir = core.getInput('BADGE_DIR')
+const badgeDir = core.getInput('BADGE_DIR')
 const fs = __nccwpck_require__(7147)
-// const path = require('path')
+const path = __nccwpck_require__(1017)
+const https = __nccwpck_require__(5687)
 
 function createBadgeUrl({
   label,
@@ -11816,6 +11817,43 @@ for (const licenseType of Object.keys(licenseTypes)) {
   }
 }
 
+function writeToFileFromURL(url, filepath) {
+  // Create a write stream to the local file
+  const fileStream = fs.createWriteStream(filepath)
+
+  // Make a GET request to the URL
+  const request = https.get(url, response => {
+    if (response.statusCode !== 200) {
+      console.error(
+        `HTTP request failed with status code ${response.statusCode}`
+      )
+      return
+    }
+
+    // Pipe the response data to the local file
+    response.pipe(fileStream)
+
+    // Handle the 'end' event to know when the file has been fully written
+    fileStream.on('finish', () => {
+      console.log(`File saved to ${filepath}`)
+      fileStream.close()
+    })
+  })
+
+  // Handle errors, if any
+  request.on('error', err => {
+    console.error(`Request error: ${err.message}`)
+  })
+
+  // Close the write stream if an error occurs
+  request.on('socket', socket => {
+    socket.on('error', err => {
+      console.error(`Socket error: ${err.message}`)
+      fileStream.close()
+    })
+  })
+}
+
 function generateLicenseBadge(licenseInfo, filename = 'license.svg') {
   const badgeOptions = {
     label: 'license',
@@ -11830,12 +11868,11 @@ function generateLicenseBadge(licenseInfo, filename = 'license.svg') {
     badgeOptions.color = licenseToColorMap[licenseInfo.spdxId]
   }
 
-  //   const svgContent = makeBadge(badgeOptions)
-  //   const filePath = path.join(badgeDir, filename)
-  //   fs.writeFileSync(filePath, svgContent)
-  //   console.log(`Badge successfully written at ${filePath}`)
+  const badgeUrl = createBadgeUrl(badgeOptions)
+  const filePath = path.join(badgeDir, filename)
+  writeToFileFromURL(badgeUrl, filePath)
 
-  return createBadgeUrl(badgeOptions)
+  return badgeUrl
 }
 
 function generateLanguageBadge(
@@ -11860,12 +11897,11 @@ function generateLanguageBadge(
     badgeOptions.message = `${node.name}(${colorPercent}%)`
   }
 
-  //   const svgContent = makeBadge(badgeOptions)
-  //   const filePath = path.join(badgeDir, filename)
-  //   fs.writeFileSync(filePath, svgContent)
-  //   console.log(`Badge successfully written at ${filePath}`)
+  const badgeUrl = createBadgeUrl(badgeOptions)
+  const filePath = path.join(badgeDir, filename)
+  writeToFileFromURL(badgeUrl, filePath)
 
-  return createBadgeUrl(badgeOptions)
+  return badgeUrl
 }
 
 module.exports = {
