@@ -11809,7 +11809,7 @@ const licenseTypes = {
  * @type {object}
  */
 const licenseToColorMap = {}
-for (const licenseType of licenseTypes) {
+for (const licenseType of Object.keys(licenseTypes)) {
   const { spdxLicenseIds, aliases, color, priority } = licenseTypes[licenseType]
   for (const license of spdxLicenseIds) {
     licenseToColorMap[license] = { color, priority }
