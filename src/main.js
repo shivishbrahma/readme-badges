@@ -1,6 +1,6 @@
 const core = require('@actions/core')
 const github = require('@actions/github')
-const { generateLicenseBadge } = require('./utils')
+const { generateLicenseBadge, generateLanguageBadge } = require('./utils')
 
 /**
  * The main function for the action.
@@ -10,7 +10,7 @@ async function run() {
   try {
     // Constant for GitHub Actions
     const showLicense = core.getBooleanInput('SHOW_LICENSE')
-    const badgeStyle = core.getInput('BADGE_STYLE')
+    const showLanguage = core.getBooleanInput('SHOW_LANGUAGE')
     const token = core.getInput('GH_TOKEN', { required: true })
 
     const owner = github.context.repo.owner
@@ -41,13 +41,19 @@ async function run() {
                     }
                     size
                 }
+                totalSize
             }
         }
     }`)
 
     // Generate License Badge
-    if (!!repository && showLicense) {
-      badges.push(generateLicenseBadge(repository.licenseInfo, badgeStyle))
+    if (showLicense) {
+      badges.push(generateLicenseBadge(repository.licenseInfo))
+    }
+
+    // Generate language Badge
+    if (showLanguage) {
+      badges.push(generateLanguageBadge(repository.languages))
     }
 
     console.log(JSON.stringify(badges, undefined, 2))

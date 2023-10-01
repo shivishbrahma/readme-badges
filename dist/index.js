@@ -9636,7 +9636,7 @@ function wrappy (fn, cb) {
 
 const core = __nccwpck_require__(2186)
 const github = __nccwpck_require__(5438)
-const { generateLicenseBadge } = __nccwpck_require__(1608)
+const { generateLicenseBadge, generateLanguageBadge } = __nccwpck_require__(1608)
 
 /**
  * The main function for the action.
@@ -9646,6 +9646,7 @@ async function run() {
   try {
     // Constant for GitHub Actions
     const showLicense = core.getBooleanInput('SHOW_LICENSE')
+    const showLanguage = core.getBooleanInput('SHOW_LANGUAGE')
     const badgeStyle = core.getInput('BADGE_STYLE')
     const token = core.getInput('GH_TOKEN', { required: true })
 
@@ -9677,13 +9678,18 @@ async function run() {
                     }
                     size
                 }
+                totalSize
             }
         }
     }`)
 
     // Generate License Badge
-    if (!!repository && showLicense) {
+    if (showLicense) {
       badges.push(generateLicenseBadge(repository.licenseInfo, badgeStyle))
+    }
+
+    if (showLanguage) {
+      badges.push(generateLanguageBadge(repository.languages, badgeStyle))
     }
 
     console.log(JSON.stringify(badges, undefined, 2))
@@ -9717,15 +9723,26 @@ function createBadgeUrl(
   labelColor = null,
   color = null
 ) {
-  return `https://img.shields.io/badge/${encodeURI(title)}-${encodeURI(
+  let url = `https://img.shields.io/badge/${encodeURI(title)}-${encodeURI(
     desc
-  )}-${encodeURI(descColor)}?style=${encodeURI(style)}${
-    !!logo ? '&logo=' + encodeURI(logo) : ''
-  }${!!logoColor ? '&logoColor=' + encodeURI(logoColor) : ''}${
-    !!label ? '&label=' + encodeURI(label) : ''
-  }${!!labelColor ? '&labelColor=' + encodeURI(labelColor) : ''}${
-    !!color ? '&color=' + encodeURI(color) : ''
-  }`
+  )}-${encodeURI(descColor)}?style=${encodeURI(style)}`
+
+  if (logo) {
+    url = `${url}&logo=${encodeURI(logo)}`
+  }
+  if (logoColor) {
+    url = `${url}&logoColor=${encodeURI(logoColor)}`
+  }
+  if (label) {
+    url = `${url}&label=${encodeURI(label)}`
+  }
+  if (labelColor) {
+    url = `${url}&labelColor=${encodeURI(labelColor)}`
+  }
+  if (color) {
+    url = `${url}&color=${encodeURI(color)}`
+  }
+  return url
 }
 
 const licenseTypes = {
@@ -9822,22 +9839,22 @@ const licenseTypes = {
  * @type {object}
  */
 const licenseToColorMap = {}
-Object.keys(licenseTypes).forEach(licenseType => {
+for (const licenseType of licenseTypes) {
   const { spdxLicenseIds, aliases, color, priority } = licenseTypes[licenseType]
-  spdxLicenseIds.forEach(license => {
+  for (const license of spdxLicenseIds) {
     licenseToColorMap[license] = { color, priority }
-  })
-  aliases.forEach(license => {
+  }
+  for (const license of aliases) {
     licenseToColorMap[license] = { color, priority }
-  })
-})
+  }
+}
 
 function generateLicenseBadge(licenseInfo, style) {
   const title = 'license'
   let desc = 'not specified'
   let descColor = 'lightgrey'
 
-  if (!!licenseInfo) {
+  if (licenseInfo) {
     desc = licenseInfo.spdxId
     descColor = licenseToColorMap[licenseInfo.spdxId]
   }
@@ -9845,9 +9862,26 @@ function generateLicenseBadge(licenseInfo, style) {
   return createBadgeUrl(title, desc, descColor, style)
 }
 
+function generateLanguageBadge(languages, style, decimalPrecision = 2) {
+  const title = 'language'
+  let desc = 'not found'
+  let descColor = 'lightgrey'
+
+  if (languages && languages.edges.length > 0) {
+    const { node, size } = languages.edges[0]
+    descColor = node.color
+    const colorPercent = ((size * 100) / languages.totalSize).toFixed(
+      decimalPrecision
+    )
+    desc = `${node.name}(${colorPercent}%)`
+  }
+  return createBadgeUrl(title, desc, descColor, style)
+}
+
 module.exports = {
   createBadgeUrl,
-  generateLicenseBadge
+  generateLicenseBadge,
+  generateLanguageBadge
 }
 
 

@@ -10,9 +10,15 @@ inputs:
   SHOW_LICENSE:
     description: "Whether to generate LICENSE badge"
     default: "True"
+  SHOW_LANGUAGE:
+    description: "Whether to generate language badge"
+    default: "True"
   BADGE_STYLE:
     description: "Style for the badge maker (flat, flat-square, plastic, for-the-badge, social)"
     default: for-the-badge
+  BADGE_DIR:
+    description: "Directory where badges are stored"
+    default: badges
 
 # Define your outputs here.
 outputs:

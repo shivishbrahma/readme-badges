@@ -1,3 +1,10 @@
+const { makeBadge, ValidationError } = require('badge-maker')
+const core = require('@actions/core')
+const badgeStyle = core.getInput('BADGE_STYLE')
+const badgeDir = core.getInput('BADGE_DIR')
+const fs = require('fs')
+const path = require('path')
+
 function createBadgeUrl(
   title,
   desc,
@@ -9,15 +16,26 @@ function createBadgeUrl(
   labelColor = null,
   color = null
 ) {
-  return `https://img.shields.io/badge/${encodeURI(title)}-${encodeURI(
+  let url = `https://img.shields.io/badge/${encodeURI(title)}-${encodeURI(
     desc
-  )}-${encodeURI(descColor)}?style=${encodeURI(style)}${
-    !!logo ? '&logo=' + encodeURI(logo) : ''
-  }${!!logoColor ? '&logoColor=' + encodeURI(logoColor) : ''}${
-    !!label ? '&label=' + encodeURI(label) : ''
-  }${!!labelColor ? '&labelColor=' + encodeURI(labelColor) : ''}${
-    !!color ? '&color=' + encodeURI(color) : ''
-  }`
+  )}-${encodeURI(descColor)}?style=${encodeURI(style)}`
+
+  if (logo) {
+    url = `${url}&logo=${encodeURI(logo)}`
+  }
+  if (logoColor) {
+    url = `${url}&logoColor=${encodeURI(logoColor)}`
+  }
+  if (label) {
+    url = `${url}&label=${encodeURI(label)}`
+  }
+  if (labelColor) {
+    url = `${url}&labelColor=${encodeURI(labelColor)}`
+  }
+  if (color) {
+    url = `${url}&color=${encodeURI(color)}`
+  }
+  return url
 }
 
 const licenseTypes = {
@@ -114,30 +132,70 @@ const licenseTypes = {
  * @type {object}
  */
 const licenseToColorMap = {}
-Object.keys(licenseTypes).forEach(licenseType => {
+for (const licenseType of licenseTypes) {
   const { spdxLicenseIds, aliases, color, priority } = licenseTypes[licenseType]
-  spdxLicenseIds.forEach(license => {
+  for (const license of spdxLicenseIds) {
     licenseToColorMap[license] = { color, priority }
-  })
-  aliases.forEach(license => {
+  }
+  for (const license of aliases) {
     licenseToColorMap[license] = { color, priority }
-  })
-})
+  }
+}
 
-function generateLicenseBadge(licenseInfo, style) {
-  const title = 'license'
-  let desc = 'not specified'
-  let descColor = 'lightgrey'
-
-  if (!!licenseInfo) {
-    desc = licenseInfo.spdxId
-    descColor = licenseToColorMap[licenseInfo.spdxId]
+function generateLicenseBadge(licenseInfo, filename = 'license.svg') {
+  const badgeOptions = {
+    label: 'license',
+    message: 'not specified',
+    labelColor: '#555',
+    color: 'lightgrey',
+    style: badgeStyle
   }
 
-  return createBadgeUrl(title, desc, descColor, style)
+  if (licenseInfo) {
+    badgeOptions.message = licenseInfo.spdxId
+    badgeOptions.color = licenseToColorMap[licenseInfo.spdxId]
+  }
+
+  const svgContent = makeBadge(badgeOptions)
+  const filePath = path.join(badgeDir, filename)
+  fs.writeFileSync(filePath, svgContent)
+  console.log(`Badge successfully written at ${filePath}`)
+
+  return svgContent
+}
+
+function generateLanguageBadge(
+  languages,
+  filename = 'language.svg',
+  decimalPrecision = 2
+) {
+  const badgeOptions = {
+    label: 'language',
+    message: 'not found',
+    labelColor: '#555',
+    color: 'lightgrey',
+    style: badgeStyle
+  }
+
+  if (languages && languages.edges.length > 0) {
+    const { node, size } = languages.edges[0]
+    badgeOptions.color = node.color
+    const colorPercent = ((size * 100) / languages.totalSize).toFixed(
+      decimalPrecision
+    )
+    badgeOptions.message = `${node.name}(${colorPercent}%)`
+  }
+
+  const svgContent = makeBadge(badgeOptions)
+  const filePath = path.join(badgeDir, filename)
+  fs.writeFileSync(filePath, svgContent)
+  console.log(`Badge successfully written at ${filePath}`)
+  
+  return svgContent
 }
 
 module.exports = {
   createBadgeUrl,
-  generateLicenseBadge
+  generateLicenseBadge,
+  generateLanguageBadge
 }
