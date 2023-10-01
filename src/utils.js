@@ -121,7 +121,7 @@ const licenseTypes = {
   'public-domain': {
     spdxLicenseIds: ['CC0-1.0', 'Unlicense', 'WTFPL'],
     aliases: ['CC0'],
-    color: '7cd958',
+    color: '#7cd958',
     priority: '3'
   }
 }

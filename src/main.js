@@ -13,6 +13,9 @@ async function run() {
     const showLanguage = core.getBooleanInput('SHOW_LANGUAGE')
     const token = core.getInput('GH_TOKEN', { required: true })
 
+    console.log('SHOW_LICENSE:', showLicense)
+    console.log('SHOW_LANGUAGE:', showLanguage)
+
     const owner = github.context.repo.owner
     const repo = github.context.repo.repo
 
