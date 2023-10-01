@@ -1,40 +1,34 @@
 const { makeBadge, ValidationError } = require('badge-maker')
 const core = require('@actions/core')
 const badgeStyle = core.getInput('BADGE_STYLE')
-const badgeDir = core.getInput('BADGE_DIR')
+// const badgeDir = core.getInput('BADGE_DIR')
 const fs = require('fs')
-const path = require('path')
+// const path = require('path')
 
-function createBadgeUrl(
-  title,
-  desc,
-  descColor,
-  style = 'flat', // flat, flat-square, plastic, for-the-badge, social
-  logo = null,
-  logoColor = null,
-  label = null,
-  labelColor = null,
-  color = null
-) {
-  let url = `https://img.shields.io/badge/${encodeURI(title)}-${encodeURI(
-    desc
-  )}-${encodeURI(descColor)}?style=${encodeURI(style)}`
-
+function createBadgeUrl({
+  label,
+  message,
+  labelColor,
+  color,
+  style,
+  logo,
+  logoColor
+}) {
+  let url = `https://img.shields.io/badge/${encodeURI(label)}-${encodeURI(
+    message
+  )}-${encodeURI(color.toString().replace('#', ''))}?style=${encodeURI(style)}`
   if (logo) {
     url = `${url}&logo=${encodeURI(logo)}`
   }
   if (logoColor) {
-    url = `${url}&logoColor=${encodeURI(logoColor)}`
-  }
-  if (label) {
-    url = `${url}&label=${encodeURI(label)}`
+    url = `${url}&logoColor=${encodeURI(logoColor.toString().replace('#', ''))}`
   }
   if (labelColor) {
-    url = `${url}&labelColor=${encodeURI(labelColor)}`
+    url = `${url}&labelColor=${encodeURI(
+      labelColor.toString().replace('#', '')
+    )}`
   }
-  if (color) {
-    url = `${url}&color=${encodeURI(color)}`
-  }
+
   return url
 }
 
@@ -156,12 +150,12 @@ function generateLicenseBadge(licenseInfo, filename = 'license.svg') {
     badgeOptions.color = licenseToColorMap[licenseInfo.spdxId]
   }
 
-  const svgContent = makeBadge(badgeOptions)
-  const filePath = path.join(badgeDir, filename)
-  fs.writeFileSync(filePath, svgContent)
-  console.log(`Badge successfully written at ${filePath}`)
+  //   const svgContent = makeBadge(badgeOptions)
+  //   const filePath = path.join(badgeDir, filename)
+  //   fs.writeFileSync(filePath, svgContent)
+  //   console.log(`Badge successfully written at ${filePath}`)
 
-  return svgContent
+  return createBadgeUrl(badgeOptions)
 }
 
 function generateLanguageBadge(
@@ -186,12 +180,12 @@ function generateLanguageBadge(
     badgeOptions.message = `${node.name}(${colorPercent}%)`
   }
 
-  const svgContent = makeBadge(badgeOptions)
-  const filePath = path.join(badgeDir, filename)
-  fs.writeFileSync(filePath, svgContent)
-  console.log(`Badge successfully written at ${filePath}`)
+  //   const svgContent = makeBadge(badgeOptions)
+  //   const filePath = path.join(badgeDir, filename)
+  //   fs.writeFileSync(filePath, svgContent)
+  //   console.log(`Badge successfully written at ${filePath}`)
 
-  return svgContent
+  return createBadgeUrl(badgeOptions)
 }
 
 module.exports = {
