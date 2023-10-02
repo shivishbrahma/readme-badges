@@ -24,9 +24,15 @@ class GithubManager {
       fs.rmSync(this.clone_path, { force: true, recursive: true })
     }
 
-    this.__gitRepo = simpleGit()
-    await this.__gitRepo.clone(this.__REPO_PATH, this.clone_path)
-    console.log('Git Repo cloned')
+    await simpleGit().clone(
+      this.__REPO_PATH,
+      this.clone_path,
+      undefined,
+      () => {
+        console.log('Git Repo cloned')
+      }
+    )
+    this.__gitRepo = simpleGit(this.clone_path)
 
     const branch = (await this.__gitRepo.branch()).current
     console.log('Current Branch:', branch)
