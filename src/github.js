@@ -1,5 +1,6 @@
 const { simpleGit } = require('simple-git')
 const path = require('path')
+const fs = require('fs')
 const github = require('@actions/github')
 const env = require('./envManager')
 const badgeMaker = require('./badgeMaker')
@@ -18,12 +19,21 @@ class GithubManager {
 
   async init() {
     this.__REPO_PATH = `https://${env.token}@${this.githubHost}/${this.__REMOTE_NAME}.git`
-    this.__gitRepo = simpleGit(__dirname)
+
+    if (fs.existsSync(this.clone_path)) {
+      fs.rmSync(this.clone_path, { force: true, recursive: true })
+    }
+
+    this.__gitRepo = simpleGit()
+    await this.__gitRepo.clone(this.__REPO_PATH, this.clone_path)
+    console.log('Git Repo cloned')
 
     const isRepo = await this.__gitRepo.checkIsRepo()
     if (isRepo) console.log('This is a git repo')
     else console.log('Not a Repo')
 
+    const branch = (await this.__gitRepo.branch()).current
+    console.log('Current Branch:', branch)
     // await this.__gitRepo
     //   .addConfig('user.name', env.commitUsername)
     //   .addConfig('user.email', env.commitEmail)
@@ -49,7 +59,11 @@ class GithubManager {
     // const filePath = path.join(badgeDir, filename)
     // writeToFileFromURL(badgeUrl, filePath)
     for (const badgeType of Object.keys(badges)) {
-      const filePath = path.join(env.badgeDir, env.badgeFilenames[badgeType])
+      const filePath = path.join(
+        this.clone_path,
+        env.badgeDir,
+        env.badgeFilenames[badgeType]
+      )
       badges[badgeType]['filepath'] = filePath
       badgeMaker.writeToFileFromURL(badges[badgeType].url, filePath, () => {
         this.__gitRepo.add(filePath)
