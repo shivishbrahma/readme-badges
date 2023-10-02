@@ -58,9 +58,9 @@ class GithubManager {
         env.badgeFilenames[badgeType]
       )
       badges[badgeType]['filepath'] = filePath
-    //   badgeMaker.writeToFileFromURL(badges[badgeType].url, filePath, () => {
-    //     this.__gitRepo.add(filePath)
-    //   })
+      //   badgeMaker.writeToFileFromURL(badges[badgeType].url, filePath, () => {
+      //     this.__gitRepo.add(filePath)
+      //   })
     }
 
     // await this.__gitRepo
