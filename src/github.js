@@ -18,13 +18,15 @@ class GithubManager {
 
   async init() {
     this.__REPO_PATH = `https://${env.token}@${this.githubHost}/${this.__REMOTE_NAME}.git`
-    // await simpleGit()
-    //   .addConfig('user.name', env.commitUsername)
-    //   .addConfig('user.email', env.commitEmail)
     this.__gitRepo = simpleGit(__dirname)
+
     const isRepo = await this.__gitRepo.checkIsRepo()
     if (isRepo) console.log('This is a git repo')
     else console.log('Not a Repo')
+
+    // await this.__gitRepo
+    //   .addConfig('user.name', env.commitUsername)
+    //   .addConfig('user.email', env.commitEmail)
   }
 
   async updateREADME(data) {
@@ -49,10 +51,18 @@ class GithubManager {
     for (const badgeType of Object.keys(badges)) {
       const filePath = path.join(env.badgeDir, env.badgeFilenames[badgeType])
       badges[badgeType]['filepath'] = filePath
-      //   writeToFileFromURL(badges[badgeType].url, filePath, () => {
-      //     simpleGit().add(filePath)
-      //   })
+      badgeMaker.writeToFileFromURL(badges[badgeType].url, filePath, () => {
+        this.__gitRepo.add(filePath)
+      })
     }
+
+    await this.__gitRepo
+      .addConfig('user.name', env.commitUsername)
+      .addConfig('user.email', env.commitEmail)
+      .commit(env.commitMessage)
+      .push()
+
+    console.log('Changes commited...')
 
     return badges
   }
