@@ -7,18 +7,43 @@ inputs:
   GH_TOKEN:
     description: "GitHub access token with Repo scope"
     required: true
+
   SHOW_LICENSE:
     description: "Whether to generate LICENSE badge"
     default: "True"
+
   SHOW_LANGUAGE:
     description: "Whether to generate language badge"
     default: "True"
+
   BADGE_STYLE:
     description: "Style for the badge maker (flat, flat-square, plastic, for-the-badge, social)"
     default: for-the-badge
+
   BADGE_DIR:
     description: "Directory where badges are stored"
     default: badges
+
+  COMMIT_BY_ME:
+    description: "Git commit with your own name and email"
+    default: "False"
+
+  COMMIT_MESSAGE:
+    description: "Git commit message"
+    default: "Updated with README badges"
+
+  COMMIT_EMAIL:
+    description: "Git commit custom email"
+    default: "github-actions@github.com"
+
+  COMMIT_USERNAME:
+    description: "Git commit custom username"
+    default: "github-actions"
+
+  DEBUG_LOGGING:
+    required: false
+    description: "Whether to enable action debug logging"
+    default: ${{ runner.debug }}
 
 # Define your outputs here.
 outputs:
@@ -28,3 +53,7 @@ outputs:
 runs:
   using: node20
   main: dist/index.js
+
+branding:
+  icon: 'terminal'
+  color: 'orange'

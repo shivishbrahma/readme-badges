@@ -1,10 +1,7 @@
-const { makeBadge, ValidationError } = require('badge-maker')
 const core = require('@actions/core')
-const badgeStyle = core.getInput('BADGE_STYLE')
-const badgeDir = core.getInput('BADGE_DIR')
 const fs = require('fs')
-const path = require('path')
 const https = require('https')
+const env = require('./envManager')
 
 function createBadgeUrl({
   label,
@@ -137,7 +134,12 @@ for (const licenseType of Object.keys(licenseTypes)) {
   }
 }
 
-function writeToFileFromURL(url, filepath) {
+function writeToFileFromURL(
+  url,
+  filepath,
+  successCb = () => {},
+  failureCb = () => {}
+) {
   // Create a write stream to the local file
   const fileStream = fs.createWriteStream(filepath)
 
@@ -157,6 +159,7 @@ function writeToFileFromURL(url, filepath) {
     fileStream.on('finish', () => {
       console.log(`File saved to ${filepath}`)
       fileStream.close()
+      successCb()
     })
   })
 
@@ -170,17 +173,18 @@ function writeToFileFromURL(url, filepath) {
     socket.on('error', err => {
       console.error(`Socket error: ${err.message}`)
       fileStream.close()
+      failureCb()
     })
   })
 }
 
-function generateLicenseBadge(licenseInfo, filename = 'license.svg') {
+function generateLicenseBadge(licenseInfo) {
   const badgeOptions = {
     label: 'license',
     message: 'not specified',
     labelColor: '#555',
     color: 'lightgrey',
-    style: badgeStyle
+    style: env.badgeStyle
   }
 
   if (licenseInfo) {
@@ -189,23 +193,16 @@ function generateLicenseBadge(licenseInfo, filename = 'license.svg') {
   }
 
   const badgeUrl = createBadgeUrl(badgeOptions)
-  const filePath = path.join(badgeDir, filename)
-  writeToFileFromURL(badgeUrl, filePath)
-
   return badgeUrl
 }
 
-function generateLanguageBadge(
-  languages,
-  filename = 'language.svg',
-  decimalPrecision = 2
-) {
+function generateLanguageBadge(languages, decimalPrecision = 2) {
   const badgeOptions = {
     label: 'language',
     message: 'not found',
     labelColor: '#555',
     color: 'lightgrey',
-    style: badgeStyle
+    style: env.badgeStyle
   }
 
   if (languages && languages.edges.length > 0) {
@@ -218,14 +215,12 @@ function generateLanguageBadge(
   }
 
   const badgeUrl = createBadgeUrl(badgeOptions)
-  const filePath = path.join(badgeDir, filename)
-  writeToFileFromURL(badgeUrl, filePath)
-
   return badgeUrl
 }
 
 module.exports = {
   createBadgeUrl,
   generateLicenseBadge,
-  generateLanguageBadge
+  generateLanguageBadge,
+  writeToFileFromURL
 }

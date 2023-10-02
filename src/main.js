@@ -1,6 +1,7 @@
 const core = require('@actions/core')
 const github = require('@actions/github')
-const { generateLicenseBadge, generateLanguageBadge } = require('./utils')
+const { GithubManager } = require('./github')
+const env = require('./envManager')
 
 /**
  * The main function for the action.
@@ -8,30 +9,10 @@ const { generateLicenseBadge, generateLanguageBadge } = require('./utils')
  */
 async function run() {
   try {
-    // Constant for GitHub Actions
-    const showLicense = core.getBooleanInput('SHOW_LICENSE')
-    const showLanguage = core.getBooleanInput('SHOW_LANGUAGE')
-    const token = core.getInput('GH_TOKEN', { required: true })
+    const githubManager = new GithubManager(env.token)
 
-    console.log('SHOW_LICENSE:', showLicense)
-    console.log('SHOW_LANGUAGE:', showLanguage)
-
-    const owner = github.context.repo.owner
-    const repo = github.context.repo.repo
-
-    const octokit = github.getOctokit(token)
-
-    const headers = {
-      'User-Agent': 'Web/2.0',
-      Authorization: `Bearer ${token}`
-    }
-
-    const graphQLWithAuth = octokit.graphql.defaults({ headers })
-
-    const badges = []
-
-    const { repository } = await graphQLWithAuth(`{
-        repository(name: "${repo}", owner: "${owner}") {
+    const { repository } = await githubManager.graphQL(`{
+        repository(name: "${githubManager.repo}", owner: "${githubManager.owner}") {
             name
             nameWithOwner
             description
@@ -49,17 +30,13 @@ async function run() {
         }
     }`)
 
-    // Generate License Badge
-    if (showLicense) {
-      badges.push(generateLicenseBadge(repository.licenseInfo))
-    }
-
-    // Generate language Badge
-    if (showLanguage) {
-      badges.push(generateLanguageBadge(repository.languages))
-    }
-
+    const badges = githubManager.updateREADME(repository)
     console.log(JSON.stringify(badges, undefined, 2))
+
+    // git config user.name ${commitUsername}
+    // git config user.email ${commitEmail}
+    // git commit -m "${commitMessage}"
+    // git push --force
 
     // Set outputs for other workflow steps to use
     core.setOutput('time', new Date().toTimeString())
