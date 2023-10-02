@@ -1,5 +1,7 @@
 const core = require('@actions/core')
-const { wait } = require('./wait')
+const github = require('@actions/github')
+const { GithubManager } = require('./github')
+const env = require('./envManager')
 
 /**
  * The main function for the action.
@@ -7,15 +9,34 @@ const { wait } = require('./wait')
  */
 async function run() {
   try {
-    const ms = core.getInput('milliseconds', { required: true })
+    const githubManager = new GithubManager(env.token)
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    const { repository } = await githubManager.graphQL(`{
+        repository(name: "${githubManager.repo}", owner: "${githubManager.owner}") {
+            name
+            nameWithOwner
+            description
+            licenseInfo {name, spdxId}
+            languages (first: 5, orderBy: {direction: DESC,field: SIZE}){
+                edges {
+                    node {
+                        name
+                        color
+                    }
+                    size
+                }
+                totalSize
+            }
+        }
+    }`)
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    const badges = await githubManager.updateREADME(repository)
+    console.log(JSON.stringify(badges, undefined, 2))
+
+    // git config user.name ${commitUsername}
+    // git config user.email ${commitEmail}
+    // git commit -m "${commitMessage}"
+    // git push --force
 
     // Set outputs for other workflow steps to use
     core.setOutput('time', new Date().toTimeString())
