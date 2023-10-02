@@ -30,7 +30,7 @@ async function run() {
         }
     }`)
 
-    const badges = githubManager.updateREADME(repository)
+    const badges = await githubManager.updateREADME(repository)
     console.log(JSON.stringify(badges, undefined, 2))
 
     // git config user.name ${commitUsername}

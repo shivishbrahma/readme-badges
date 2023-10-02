@@ -15509,7 +15509,6 @@ class GithubManager {
   }
 
   async init() {
-    this.user = await this.octokit.rest.users.getAuthenticated()
     this.__REPO_PATH = `https://${env.token}@${this.githubHost}/${this.__REMOTE_NAME}.git`
     // await simpleGit()
     //   .addConfig('user.name', env.commitUsername)
@@ -15593,7 +15592,7 @@ async function run() {
         }
     }`)
 
-    const badges = githubManager.updateREADME(repository)
+    const badges = await githubManager.updateREADME(repository)
     console.log(JSON.stringify(badges, undefined, 2))
 
     // git config user.name ${commitUsername}
