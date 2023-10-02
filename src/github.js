@@ -28,15 +28,8 @@ class GithubManager {
     await this.__gitRepo.clone(this.__REPO_PATH, this.clone_path)
     console.log('Git Repo cloned')
 
-    const isRepo = await this.__gitRepo.checkIsRepo()
-    if (isRepo) console.log('This is a git repo')
-    else console.log('Not a Repo')
-
     const branch = (await this.__gitRepo.branch()).current
     console.log('Current Branch:', branch)
-    // await this.__gitRepo
-    //   .addConfig('user.name', env.commitUsername)
-    //   .addConfig('user.email', env.commitEmail)
   }
 
   async updateREADME(data) {
@@ -65,18 +58,18 @@ class GithubManager {
         env.badgeFilenames[badgeType]
       )
       badges[badgeType]['filepath'] = filePath
-      badgeMaker.writeToFileFromURL(badges[badgeType].url, filePath, () => {
-        this.__gitRepo.add(filePath)
-      })
+    //   badgeMaker.writeToFileFromURL(badges[badgeType].url, filePath, () => {
+    //     this.__gitRepo.add(filePath)
+    //   })
     }
 
-    await this.__gitRepo
-      .addConfig('user.name', env.commitUsername)
-      .addConfig('user.email', env.commitEmail)
-      .commit(env.commitMessage)
-      .push()
+    // await this.__gitRepo
+    //   .addConfig('user.name', env.commitUsername)
+    //   .addConfig('user.email', env.commitEmail)
+    //   .commit(env.commitMessage)
+    //   .push()
 
-    console.log('Changes commited...')
+    // console.log('Changes commited...')
 
     return badges
   }
